@@ -7,7 +7,7 @@ on:
     branches: [ "main" ] # mainブランチを対象にしてください
   workflow_dispatch: # xxxを手動イベントに変えてください
 
-#  jobs:
+jobs:
   build:
 
     runs-on: ubuntu-latest
