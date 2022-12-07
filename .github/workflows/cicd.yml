@@ -1,5 +1,9 @@
 name: .NET
 
+env:
+  AZURE_WEBAPP_NAME: app-as-moriwaki-ghi-00zq3q    # Azure Web Appに設定した名前に変えてください
+  AZURE_WEBAPP_PACKAGE_PATH: '.'   
+
 on:
   push: # xxxをプッシュイベントに変えてください
     branches: [ "main" ] # mainブランチを対象にしてください
@@ -33,3 +37,30 @@ jobs:
       with:
         name: dotnet-webapp
         path: ${{env.DOTNET_ROOT}}/webapp
+
+  deploy:
+    permissions:
+      contents: none
+    runs-on: ubuntu-latest
+    # この行にneedsを挿入してください
+    needs: build
+
+    environment:
+      name: 'Production'
+      url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
+
+    steps:
+      - name: Download artifact from build job
+        uses: actions/download-artifact@v3
+        with:
+          #name: # アーティファクト名を記入してください
+          name: dotnet-webapp
+          path: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
+
+      - name: Deploy to Azure Web App
+        id: deploy-to-webapp
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: ${{ env.AZURE_WEBAPP_NAME }} # env.の後にアプリ名の環境変数名を記入してください
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE }} # secrets.の後に定義したSecretの名前を記入してください
+          package: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }} # env.の後にアプリのパッケージパスの環境変数名を記入してください
